@@ -181,7 +181,17 @@ HT better: 488  LTR_HT Better: 489      Equal: 11
 Added salesRankShortTerm feature:
 
 ```sh
+Simple MRR is 0.326
+LTR Simple MRR is 0.454
+Hand tuned MRR is 0.417
+LTR Hand Tuned MRR is 0.446
 
+Simple p@10 is 0.115
+LTR simple p@10 is 0.173
+Hand tuned p@10 is 0.193
+LTR hand tuned p@10 is 0.177
+Simple better: 573      LTR_Simple Better: 776  Equal: 8
+HT better: 726  LTR_HT Better: 738      Equal: 14
 ```
 
 
