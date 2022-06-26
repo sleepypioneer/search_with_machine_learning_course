@@ -243,23 +243,28 @@ class DataPrepper:
         ##### Step 4.f:
         # Loop over the hits structure returned by running `log_query` and then extract out the features from the response per query_id and doc id.  
         # Also capture and return all query/doc pairs that didn't return features
-        # Your structure should look like the data frame below
+        # Your structure should look like the data frame above
         for doc_id in query_doc_ids:
-            feature_results["doc_id"].append(doc_id)  # capture the doc id so we can join later
+            feature_results["doc_id"].append(doc_id)
             feature_results["query_id"].append(query_id)
             feature_results["sku"].append(doc_id)
+
             for hit in hits:
-                if hit["_id"] == doc_id:
+                if int(hit["_id"]) == int(doc_id):
                     log_entries = hit["fields"]["_ltrlog"][0]["log_entry"]
-                    features = [log_entry["name"] for log_entry in log_entries]
+                    features = [log_entry for log_entry in log_entries]
                     for feature in features:
-                        feature_value = next((item["value"] for item in log_entries if item['name'] == "name_match"), 0)
-                        if feature in feature_results.keys():
-                            feature_results["name_match"].append(feature_value)
+                        # If the feature doesn't have a value we set that feature value to zero. 
+                        feature_value = feature["value"] if "value" in feature.keys() else 0
+
+                        if feature["name"] in feature_results.keys():
+                            feature_results[feature["name"]].append(feature_value)
                         else:
-                            feature_results[feature] = [feature_value]
+                            feature_results[feature["name"]] = [feature_value]
 
         frame = pd.DataFrame(feature_results)
+        # If a feature isn’t present for a particular document, we set that feature value explicitly to zero.
+        frame.fillna(0)
         return frame.astype({'doc_id': 'int64', 'query_id': 'int64', 'sku': 'int64'})
 
     # Can try out normalizing data, but for XGb, you really don't have to since it is just finding splits
