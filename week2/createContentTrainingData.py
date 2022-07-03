@@ -1,15 +1,23 @@
 import argparse
-import multiprocessing
 import glob
-from tqdm import tqdm
+import multiprocessing
 import os
+import re
 import random
+from typing import List, Tuple
+from tqdm import tqdm
 import xml.etree.ElementTree as ET
+import pandas as pd
 from pathlib import Path
+from nltk.stem import SnowballStemmer
+
+
+stemmer = SnowballStemmer("english")
 
 def transform_name(product_name):
-    # IMPLEMENT
-    return product_name
+    product_name = re.sub(r"'\W+'mg", "", product_name)
+    product_name = product_name.lower().strip()
+    return stemmer.stem(product_name)
 
 # Directory for product data
 directory = r'/workspace/datasets/product_data/products/'
@@ -26,7 +34,7 @@ general.add_argument("--label", default="id", help="id is default and needed for
 general.add_argument("--sample_rate", default=1.0, type=float, help="The rate at which to sample input (default is 1.0)")
 
 # IMPLEMENT: Setting min_products removes infrequent categories and makes the classifier's task easier.
-general.add_argument("--min_products", default=0, type=int, help="The minimum number of products per category (default is 0).")
+general.add_argument("--min_products", default=50, type=int, help="The minimum number of products per category (default is 0).")
 
 args = parser.parse_args()
 output_file = args.output
@@ -71,12 +79,20 @@ def _label_filename(filename):
 if __name__ == '__main__':
     files = glob.glob(f'{directory}/*.xml')
 
-    print("Writing results to %s" % output_file)
     with multiprocessing.Pool() as p:
+        labels_df = pd.DataFrame()
         all_labels = tqdm(p.imap_unordered(_label_filename, files), total=len(files))
+        for label_list in all_labels:
+            labels_df = labels_df.append(label_list)
+        
+        labels_df = labels_df.rename(columns={0: "category", 1 : "product_name"})
+        categories_to_keep = labels_df["category"].value_counts().loc[lambda x : x > min_products].index.to_list()
 
+        pruned_labels_df = labels_df.loc[labels_df["category"].isin(categories_to_keep)]
 
+        pruned_labels_df["output_string"] = pruned_labels_df[["category", "product_name"]].apply(lambda row: f'__label__{row[0]} {row[1]}', axis=1)
+
+        print(f"Writing {len(pruned_labels_df)} results to {output_file}")
         with open(output_file, 'w') as output:
-            for label_list in all_labels:
-                for (cat, name) in label_list:
-                    output.write(f'__label__{cat} {name}\n')
+            for entry in pruned_labels_df["output_string"]:
+                output.write(f'{entry}\n')

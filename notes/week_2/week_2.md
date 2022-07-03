@@ -146,7 +146,6 @@ Progress: 100.0% words/sec/thread:    1757 lr:  0.000000 avg.loss: 10.174898 ETA
 
 `~/fastText-0.9.2/fasttext test model_cooking.bin cooking.test`
 ```sh
-
 N       3000
 P@1     0.143
 R@1     0.062
