@@ -73,6 +73,10 @@ Can be effective for head queries with diminishing returns. Crowd source labelli
 
 ### exercise
 
+```
+python /workspace/search_with_machine_learning_course/utilities/categoryViewer.py --max_depth 2
+```
+
 | Query           | Manually chosen category      																			|
 |-----------------|---------------------------------------------------------------------------------------------------------|
 | lcd tv          | Best Buy > TV & Home Theater > TVs > LCD TVs															|
@@ -90,15 +94,41 @@ Can be effective for head queries with diminishing returns. Crowd source labelli
 
 - string matching and regular expression approaches work well for short texts such as queries
 
+```
+cd /workspace/search_with_machine_learning_course/week3
+head /workspace/datasets/train.csv | cut -d , -f3 | python leavesToPaths.py --max_depth 3 
+```
+[Grep with regular expression](https://linuxize.com/post/regular-expressions-in-grep/)
+
+```
+grep -i -E '(laptop)?s' /workspace/datasets/train.csv | cut -d',' -f3 | python leavesToPaths.py --max_depth 3 | sort | uniq -c | sort -nr | head
+```
+
 | Category 	| Heuristic      																							|
-|-----------|
-| TVs		|		
+|-----------|-----------------------------------------------|
+| TVs		| -i -E '\b(tv)?s\b|\b(television)?s\b'
 | Laptops	|
 | Music		|
 
 
 
-## Integrating Query Understanding into search
+### Getting categories by mining logs
+
+Check the top couple of categories returned, the count for further categories should drastically fall off. This works well for high frequency queries but not for less frequent ones. Manual classification like this is ok for perhaps 1000 queries, heuristics will help get the next 10,000 but scaling beyond that is where ML comes in.
+
+- we need labeled data for training
+- we need to make sure it is representative
+- we need to include negative examples (category unknown)
+
+### Hierarchy
+
+categories often fit into a hierarchical taxonomy, often we map to the leaf category but its not always the case especially for queries.
+
+- aggregate leaf level classifications (calculate probability of a parent by the sum of its children's probability)
+- start at leaf and keep going up until we reach our threshold
+- level specific classifiers
+
+## Integrating Query classification into search
 - use it to filter results
 - as a boost
 
