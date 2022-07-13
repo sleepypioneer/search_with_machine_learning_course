@@ -171,10 +171,66 @@ R@1     0.609
 
 Work done inside [query.py](../../utilities/query.py)
 
+```sh
+cd utilities
+# run with filters
+python query.py -f
+```
+
+- **star trek** 0.51153463 Movies & TV Shows No results
+- **phone** 0.39646658 All Mobile Phones with Plans results are more phones
+- **touchpad** 0.92285466 Tablets 3 results
+```sh
+{
+"_index": "bbuy_products",
+"_type": "_doc",
+"_id": "2842056",
+"_score": 0.056138713,
+"_source": {
+	"name": [
+	"HP - TouchPad Tablet with 16GB Memory - Black"
+	],
+	"shortDescription": [
+	"HP webOS 3.09.7\" multitouch displayWi-Fi16GB memoryQuickoffice, Google Docs, Box.net"
+	]
+}
+},
+```
+
+
+```sh
+cd utilities
+# run without filters
+python query.py
+```
+
+- **star trek** 649 Results
+```sh
+{
+	"_index": "bbuy_products",
+	"_type": "_doc",
+	"_id": "8147169",
+	"_score": 0.111357495,
+	"_source": {
+		"name": [
+		"Star Trek: Legacy - Windows"
+		],
+		"shortDescription": [
+		"Helm your Starfleet into battle in space, the final frontier"
+		]
+	}
+}	
+```
+- **phone** results are a mix of phones and accessories
+- **touchpad** 0.92285466 Tablets 456 Results
+
+
 ## Assessment
 
-1a)  For a minimum number of queries per category of 1,000 there were 387 unique categories, for 10,000 only 69 categories remain
-b) my top scores were for model_bb_12 (For a minimum number of queries per category of 10,000 (69 categories) with epoch 10 and learning rate of 0.5 on training set of 100,000 (previous used 50,000) and recall of 5)
+1a)
+For a minimum number of queries per category of 1,000 there were 387 unique categories, for 10,000 only 69 categories remain.
+b) 
+My top scores were for model_bb_12 (For a minimum number of queries per category of 10,000 (69 categories) with epoch 10 and learning rate of 0.5 on training set of 100,000 (previous used 50,000) and recall of 5)
 
 
 ```sh
@@ -191,5 +247,15 @@ P@5     0.167
 R@5     0.834
 ```
 
-2a)
-b) My top sco
+2a) 
+**Touchpad** 
+was matched with 0.92285466 to Tablets and yielded 3  results with filtering, all of which were relevant. With no filtering, 649 Results were returned but many were irrelevant.
+
+**Phone**
+was matched with 0.39646658 to All Mobile Phones with Plans and yielded results with filtering that were mostly handsets (phones). With no filtering results were a mixture of handsets and accessories
+b)
+**star trek** 
+was matched with 0.51153463 to Movies & TV Shows but yielded no results with filtering, while with no filtering 649 Results were returned.
+
+**Hotpoint**
+was matched with 0.91118008 to Movies & TV Shows but yielded no results with filtering, while with no filtering 94 Results were returned including hotpoint branded items.
