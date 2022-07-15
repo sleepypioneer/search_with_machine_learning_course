@@ -10,7 +10,7 @@ import os
 from getpass import getpass
 from urllib.parse import urljoin
 import pandas as pd
-import fileinput
+import sys
 import fasttext
 import logging
 
@@ -20,6 +20,7 @@ logger.setLevel(logging.INFO)
 logging.basicConfig(format="%(levelname)s:%(message)s")
 
 model = fasttext.load_model("../model_bb_9.bin")
+categories_file_name = r'/workspace/datasets/product_data/categories/categories_0001_abcat0010000_to_pcmcat99300050000.xml'
 
 # expects clicks and impressions to be in the row
 def create_prior_queries_from_group(
@@ -65,17 +66,22 @@ def create_query(
     source=None,
     categories=None,
     is_boost=False,
+    with_filters=True,
 ):
+
     query_filters = filters
     category_boost = {}
     # if boost is true we us it for boosting and if its false we use it for filtering
-    if query_filters and categories and not is_boost:
+    if with_filters and query_filters and categories and not is_boost:
         category_filter = {"terms": {"categoryPathIds.keyword": categories}}
         query_filters.append(category_filter)
-    elif categories and not is_boost:
+    elif with_filters and categories and not is_boost:
         query_filters = [{"terms": {"categoryPathIds.keyword": categories}}]
     elif categories and is_boost:
-        category_boost = {"termsn": {"categoryPathIds.keyword": categories, "boost": 50.0}}
+        category_boost = {"terms": {"categoryPathIds.keyword": categories, "boost": 50.0}}
+
+    print("with filters ", with_filters)
+    print("Filters: ", query_filters)
 
     should_clauses = [
         {
@@ -134,6 +140,7 @@ def create_query(
 
     if category_boost:
         should_clauses.append(category_boost)
+
 
     query_obj = {
         "size": size,
@@ -196,6 +203,7 @@ def search(
     sort="_score",
     sortDir="desc",
     is_boost=False,
+    with_filters=True,
     category_threshold=0,
 ):
     #### W3: classify the query
@@ -203,7 +211,14 @@ def search(
     candiate_count = 5
     categories, probs = model.predict(user_query, k=candiate_count)
 
-    print(f"Categories: \n{categories} \n probabilities: \n {probs}")
+    cat_names_df = pd.read_xml(categories_file_name)
+
+    cat_names = []
+
+    for cat in categories:
+        cat_names.append(cat_names_df.loc[cat_names_df["id"] == cat.replace("__label__", "")]["name"].values[0])
+
+    print(f"Category Ids: \n{categories} \n category names: \n {cat_names} \n probabilities: \n {probs}")
 
     filters = None
     category_list = []
@@ -224,6 +239,7 @@ def search(
         source=["name", "shortDescription"],
         categories=category_list,
         is_boost=is_boost,
+        with_filters=with_filters,
     )
     logging.info(query_obj)
     response = client.search(query_obj, index=index)
@@ -251,6 +267,13 @@ if __name__ == "__main__":
         help="If set boosts predicted categories",
     )
     general.add_argument(
+        "-f",
+        "--filter",
+        default=False,
+        action="store_true",
+        help="If set filters results",
+    )
+    general.add_argument(
         "-c",
         "--cat_threshold",
         type=float,
@@ -271,6 +294,7 @@ if __name__ == "__main__":
     host = args.host
     port = args.port
     is_boost = args.boost
+    with_filters = args.filter
     category_threshold = args.cat_threshold
     if args.user:
         password = getpass()
@@ -291,7 +315,7 @@ if __name__ == "__main__":
     index_name = args.index
     query_prompt = "\nEnter your query (type 'Exit' to exit or hit ctrl-c):"
     print(query_prompt)
-    for line in fileinput.input():
+    for line in sys.stdin:
         query = line.rstrip()
         if query == "Exit":
             break
@@ -300,6 +324,7 @@ if __name__ == "__main__":
             user_query=query,
             index=index_name,
             is_boost=is_boost,
+            with_filters=with_filters,
             category_threshold=category_threshold,
         )
 
