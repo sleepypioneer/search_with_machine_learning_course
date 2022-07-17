@@ -2,6 +2,10 @@
 
 ## Hugging face models
 
+```sh
+pip install sentence-transformers
+``
+
 ```python
 from sentence_transformers import SentenceTransformer, util
 from itertools import combinations
@@ -17,3 +21,7 @@ config bbuy_products.json BEFORE indexing to use the LM M lib
 indexing will take about 40 minutes!
 - week 4 removes concurrent file processing
 - start query against the index as soon as it starts to receive content to check its working
+
+```sh
+./index-data.sh -r -p /workspace/search_with_machine_learning_course/week4/conf/bbuy_products.json
+```
