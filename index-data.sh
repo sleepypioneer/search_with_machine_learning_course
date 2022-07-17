@@ -8,10 +8,10 @@ usage()
 }
 
 ANNOTATIONS_JSON_FILE="/workspace/search_with_machine_learning_course/conf/bbuy_annotations.json"
-PRODUCTS_JSON_FILE="/workspace/search_with_machine_learning_course/conf/bbuy_products.json"
-QUERIES_JSON_FILE="/workspace/search_with_machine_learning_course/conf/bbuy_queries.json"
+PRODUCTS_JSON_FILE="/workspace/search_with_machine_learning_course/week4/conf/bbuy_products.json"
+QUERIES_JSON_FILE="/workspace/search_with_machine_learning_course/week4/conf/bbuy_queries.json"
 DATASETS_DIR="/workspace/datasets"
-PYTHON_LOC="/workspace/search_with_machine_learning_course/utilities"
+PYTHON_LOC="/workspace/search_with_machine_learning_course/week4/utilities"
 
 LOGS_DIR="/workspace/logs"
 ANNOTATE=""
@@ -100,6 +100,3 @@ if [ "$ANNOTATE" == "--annotate" ]; then
     fi
   fi
 fi
-
-
-
